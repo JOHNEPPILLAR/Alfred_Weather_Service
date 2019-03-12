@@ -4,7 +4,7 @@
   "description": "ALFRED - Dyson data Collector Service",
   "main": "lib/server.js",
   "scripts": {
-    "start": "node lib/server.js | pino-elasticsearch -i alfred -H alfred_elk_elasticsearch_1 -l info",
+    "start": "node lib/server.js | pino-elasticsearch -i alfred -H alfred_elk_elasticsearch_1 -l trace",
     "dev": "nodemon lib/server.js"
   },
   "author": "JP",
