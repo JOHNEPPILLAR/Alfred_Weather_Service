@@ -13,7 +13,7 @@ services:
     networks:
       - alfred
     ports:
-      - "3978:3978"
+      - "3982:3978"
     command: npm run dev
     
 networks:
