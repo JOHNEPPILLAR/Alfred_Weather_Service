@@ -23,20 +23,20 @@ const mqttClient = mqtt.connect(`mqtt://${deviceIP}`, mqttClientOptions);
 async function saveDeviceData(SQLValues) {
   try {
     const SQL = 'INSERT INTO dyson_purecool("time", sender, location, air, temperature, humidity, nitrogen) VALUES ($1, $2, $3, $4, $5, $6, $7)';
-    serviceHelper.log('trace', 'PureCool - saveData', 'Connect to data store connection pool');
+    serviceHelper.log('trace', 'Connect to data store connection pool');
     const dbClient = await global.devicesDataClient.connect(); // Connect to data store
-    serviceHelper.log('trace', 'PureCool - saveData', 'Save sensor values');
+    serviceHelper.log('trace', 'Save sensor values');
     const results = await dbClient.query(SQL, SQLValues);
-    serviceHelper.log('trace', 'PureCool - saveData', 'Release the data store connection back to the pool');
+    serviceHelper.log('trace', 'Release the data store connection back to the pool');
     await dbClient.release(); // Return data store connection back to pool
 
     if (results.rowCount !== 1) {
-      serviceHelper.log('error', 'PureCool - saveDeviceData', `Failed to insert data for device ${SQLValues[2]}`);
+      serviceHelper.log('error', `Failed to insert data for device ${SQLValues[2]}`);
       return;
     }
-    serviceHelper.log('info', 'PureCool - saveDeviceData', `Saved data for device ${SQLValues[2]}`);
+    serviceHelper.log('info', `Saved data for device ${SQLValues[2]}`);
   } catch (err) {
-    serviceHelper.log('error', 'PureCool - saveDeviceData', err.message);
+    serviceHelper.log('error', err.message);
   }
 }
 
@@ -60,11 +60,11 @@ function getNumericValue(rawValue) {
 }
 
 mqttClient.on('error', (err) => {
-  serviceHelper.log('error', 'PureCool - getPureCoolData', err.message);
+  serviceHelper.log('error', err.message);
 });
 
 mqttClient.on('connect', () => {
-  serviceHelper.log('trace', 'PureCool - getPureCoolData', `Connected to device: ${process.env.DysonUserName}`);
+  serviceHelper.log('trace', `Connected to device: ${process.env.DysonUserName}`);
   const statusSubscribeTopic = `455/${process.env.DysonUserName}/status/current`;
   mqttClient.subscribe(statusSubscribeTopic);
 });
@@ -72,7 +72,7 @@ mqttClient.on('connect', () => {
 mqttClient.on('message', async (topic, message) => {
   const deviceData = JSON.parse(message);
   if (deviceData.msg === 'ENVIRONMENTAL-CURRENT-SENSOR-DATA') {
-    serviceHelper.log('trace', 'PureCool - getPureCoolData', `Got sensor data from device: ${process.env.DysonUserName}`);
+    serviceHelper.log('trace', `Got sensor data from device: ${process.env.DysonUserName}`);
 
     const dataValues = [
       new Date(),
@@ -102,10 +102,10 @@ mqttClient.on('message', async (topic, message) => {
 
 exports.processPureCoolData = function processPureCoolData() {
   if (!mqttClient.connected) {
-    serviceHelper.log('trace', 'PureCool - getPureCoolData', `Reconnecting to device: ${process.env.DysonUserName}`);
+    serviceHelper.log('trace', `Reconnecting to device: ${process.env.DysonUserName}`);
     mqttClient.reconnect();
   }
-  serviceHelper.log('trace', 'PureCool - getPureCoolData', `Force state update from device: ${process.env.DysonUserName}`);
+  serviceHelper.log('trace', `Force state update from device: ${process.env.DysonUserName}`);
   const commandTopic = `455/${process.env.DysonUserName}/command`;
   const currentTime = new Date();
   mqttClient.publish(commandTopic, JSON.stringify({

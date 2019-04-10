@@ -43,7 +43,7 @@ const skill = new Skills();
  *
  */
 async function displayDysonPureCoolData(req, res, next) {
-  serviceHelper.log('trace', 'displayDysonPureCoolData', 'Display Dyson PureCool data API called');
+  serviceHelper.log('trace', 'Display Dyson PureCool data API called');
 
   let durationSpan = null;
   if (typeof req.query !== 'undefined') ({ durationSpan } = req.query);
@@ -75,25 +75,25 @@ async function displayDysonPureCoolData(req, res, next) {
         break;
     }
 
-    serviceHelper.log('trace', 'displayDysonPureCoolData', 'Connect to data store connection pool');
+    serviceHelper.log('trace', 'Connect to data store connection pool');
     const dbClient = await global.devicesDataClient.connect(); // Connect to data store
-    serviceHelper.log('trace', 'displayDysonPureCoolData', 'Get sensor values');
+    serviceHelper.log('trace', 'Get sensor values');
     const results = await dbClient.query(SQL);
-    serviceHelper.log('trace', 'displayDysonPureCoolData', 'Release the data store connection back to the pool');
+    serviceHelper.log('trace', 'Release the data store connection back to the pool');
     await dbClient.release(); // Return data store connection back to pool
 
     if (results.rowCount === 0) {
-      serviceHelper.log('trace', 'displayDysonPureCoolData', 'No data to return');
+      serviceHelper.log('trace', 'No data to return');
       serviceHelper.sendResponse(res, true, 'No data to return');
       return;
     }
-    serviceHelper.log('trace', 'displayDysonPureCoolData', 'Return data back to caller');
+    serviceHelper.log('trace', 'Return data back to caller');
     results.DurationTitle = durationTitle;
     results.rows.reverse();
     serviceHelper.sendResponse(res, true, results);
     next();
   } catch (err) {
-    serviceHelper.log('error', 'displayDysonPureCoolData', err.message);
+    serviceHelper.log('error', err.message);
     serviceHelper.sendResponse(res, false, err);
     next();
   }
@@ -124,29 +124,29 @@ skill.get('/displaydysonpurecooldata', displayDysonPureCoolData);
  *
  */
 async function dysonPureCoolLatest(req, res, next) {
-  serviceHelper.log('trace', 'dysonPureCoolLatest', 'Display Dyson PureCool latest readings API called');
+  serviceHelper.log('trace', 'Display Dyson PureCool latest readings API called');
   try {
     const SQL = 'SELECT location, air, temperature, humidity, nitrogen FROM dyson_purecool WHERE time > NOW() - interval \'1 hour\' ORDER BY time LIMIT 1';
-    serviceHelper.log('trace', 'displayDysonPureCoolData', 'Connect to data store connection pool');
+    serviceHelper.log('trace', 'Connect to data store connection pool');
     const dbClient = await global.devicesDataClient.connect(); // Connect to data store
-    serviceHelper.log('trace', 'displayDysonPureCoolData', 'Get sensor values');
+    serviceHelper.log('trace', 'Get sensor values');
     const results = await dbClient.query(SQL);
-    serviceHelper.log('trace', 'displayDysonPureCoolData', 'Release the data store connection back to the pool');
+    serviceHelper.log('trace', 'Release the data store connection back to the pool');
     await dbClient.release(); // Return data store connection back to pool
 
     if (results.rowCount === 0) {
-      serviceHelper.log('trace', 'displayDysonPureCoolData', 'No data exists in the last hour');
+      serviceHelper.log('trace', 'No data exists in the last hour');
       serviceHelper.sendResponse(res, false, 'No results');
       next();
       return;
     }
-    serviceHelper.log('trace', 'displayDysonPureCoolData', 'Return data back to caller');
+    serviceHelper.log('trace', 'Return data back to caller');
 
     const returnData = results.rows;
     serviceHelper.sendResponse(res, true, returnData);
     next();
   } catch (err) {
-    serviceHelper.log('error', 'dysonPureCoolLatest', err.message);
+    serviceHelper.log('error', err.message);
     serviceHelper.sendResponse(res, false, err);
     next();
   }

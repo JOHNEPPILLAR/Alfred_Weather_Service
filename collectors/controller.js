@@ -10,7 +10,7 @@ if (!process.env.Mock) {
     try {
       await pureCool.processPureCoolData(); // Collect Dyson Pure Cool device data
     } catch (err) {
-      serviceHelper.log('error', 'Controller - CollectData', err.message);
+      serviceHelper.log('error', err.message);
     }
   };
 }

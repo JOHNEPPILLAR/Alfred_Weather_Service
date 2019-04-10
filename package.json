@@ -22,7 +22,8 @@
     "restify-router": "latest",
     "pino": "latest",
     "pino-pretty": "latest",
-    "mqtt": "latest"
+    "mqtt": "latest",
+    "path": "latest"
   },
   "devDependencies": {
     "eslint": "latest",
