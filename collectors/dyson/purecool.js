@@ -77,7 +77,7 @@ mqttClient.on('message', async (topic, message) => {
     const dataValues = [
       new Date(),
       process.env.Environment,
-      'Bebroom',
+      'Bedroom',
       Math.max(
         getCharacteristicValue(deviceData.data.pm25),
         getCharacteristicValue(deviceData.data.pm10),
