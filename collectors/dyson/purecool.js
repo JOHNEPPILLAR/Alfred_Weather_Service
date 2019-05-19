@@ -42,15 +42,16 @@ async function saveDeviceData(SQLValues) {
 
 function getCharacteristicValue(rawValue) {
   if (!rawValue) return 0;
-  let integerValue = Number.parseInt(rawValue, 10);
+  const integerValue = Number.parseInt(rawValue, 10);
 
   // Reduces the scale from 0-100 to 0-10 as used in the Dyson app
-  integerValue = Math.floor(integerValue / 10);
+  // integerValue = Math.floor(integerValue / 10);
 
-  if (integerValue <= 3) return 2; // Characteristic.AirQuality.GOOD
-  if (integerValue <= 6) return 3; // Characteristic.AirQuality.FAIR
-  if (integerValue <= 8) return 4; // Characteristic.AirQuality.INFERIOR
-  return 5; // Characteristic.AirQuality.POOR
+  // if (integerValue <= 3) return 2; // Characteristic.AirQuality.GOOD
+  // if (integerValue <= 6) return 3; // Characteristic.AirQuality.FAIR
+  // if (integerValue <= 8) return 4; // Characteristic.AirQuality.INFERIOR
+  // return 5; // Characteristic.AirQuality.POOR
+  return integerValue;
 }
 
 // Converts the raw value into an integer
@@ -74,28 +75,8 @@ mqttClient.on('message', async (topic, message) => {
   if (deviceData.msg === 'ENVIRONMENTAL-CURRENT-SENSOR-DATA') {
     serviceHelper.log('trace', `Got sensor data from device: ${process.env.DysonUserName}`);
 
-    // eslint-disable-next-line radix
-    const dustValue = Number.parseInt(deviceData.data.pact || deviceData.data.pm10);
-    // eslint-disable-next-line radix
-    const vocValue = Number.parseInt(deviceData.data.vact || deviceData.data.va10);
-    let airQuality = 0;
-
-    // eslint-disable-next-line no-restricted-globals
-    if (isNaN(dustValue) || isNaN(vocValue)) {
-      airQuality = 0;
-    } else {
-      airQuality = Math.min(Math.max(Math.floor((dustValue + vocValue) / 2 * 1), 1), 5);
-    }
-
     /*
-      UNKNOWN = 0
-      EXCELLENT = 1
-      GOOD = 2
-      FAIR = 3
-      INFERIOR = 4
-      POOR = 5
-
-      From app:
+      Air quality
       1-3 = Low
       4-6 = Moderate
       7-9 = High
@@ -105,15 +86,14 @@ mqttClient.on('message', async (topic, message) => {
       new Date(),
       process.env.Environment,
       'Bedroom',
-      //Math.max(
-      //  getCharacteristicValue(deviceData.data.pm25),
-      //  getCharacteristicValue(deviceData.data.pm10),
-      //  getCharacteristicValue(deviceData.data.va10),
-      //  getCharacteristicValue(deviceData.data.noxl),
-      //  getCharacteristicValue(deviceData.data.pact),
-      //  getCharacteristicValue(deviceData.data.vact),
-      //), // Air Quality
-      airQuality, // Air Quality
+      Math.max(
+        getCharacteristicValue(deviceData.data.pm25),
+        getCharacteristicValue(deviceData.data.pm10),
+        getCharacteristicValue(deviceData.data.va10),
+        getCharacteristicValue(deviceData.data.noxl),
+        getCharacteristicValue(deviceData.data.pact),
+        getCharacteristicValue(deviceData.data.vact),
+      ), // Air Quality
       Number.parseFloat(deviceData.data.tact) / 10 - 273, // Temperature
       // eslint-disable-next-line radix
       Number.parseInt(deviceData.data.hact), // Humidity
