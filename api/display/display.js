@@ -11,8 +11,8 @@ const serviceHelper = require('../../lib/helper.js');
 const skill = new Skills();
 
 /**
- * @api {get} /displaydysonpurecooldata
- * @apiName displaydysonpurecooldata
+ * @api {get} /all
+ * @apiName all
  * @apiGroup Display
  *
  * @apiSuccessExample {json} Success-Response:
@@ -36,7 +36,7 @@ const skill = new Skills();
  *   }
  *
  */
-async function displayDysonPureCoolData(req, res, next) {
+async function all(req, res, next) {
   serviceHelper.log('trace', 'Display Dyson PureCool data API called');
 
   let durationSpan = null;
@@ -93,11 +93,11 @@ async function displayDysonPureCoolData(req, res, next) {
     next();
   }
 }
-skill.get('/displaydysonpurecooldata', displayDysonPureCoolData);
+skill.get('/all', all);
 
 /**
- * @api {get} /displaydysonpurecool
- * @apiName displaydysonpurecool
+ * @api {get} /current
+ * @apiName current
  * @apiGroup Display
  *
  * @apiSuccessExample {json} Success-Response:
@@ -118,7 +118,7 @@ skill.get('/displaydysonpurecooldata', displayDysonPureCoolData);
  *   }
  *
  */
-async function dysonPureCoolLatest(req, res, next) {
+async function current(req, res, next) {
   serviceHelper.log('trace', 'Display Dyson PureCool latest readings API called');
   try {
     const SQL = 'SELECT location, air, temperature, humidity, nitrogen FROM dyson_purecool WHERE time > NOW() - interval \'1 hour\' ORDER BY time LIMIT 1';
@@ -146,6 +146,6 @@ async function dysonPureCoolLatest(req, res, next) {
     next();
   }
 }
-skill.get('/dysonpurecoollatest', dysonPureCoolLatest);
+skill.get('/current', current);
 
 module.exports = skill;
