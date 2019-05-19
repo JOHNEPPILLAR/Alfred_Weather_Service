@@ -74,20 +74,49 @@ mqttClient.on('message', async (topic, message) => {
   if (deviceData.msg === 'ENVIRONMENTAL-CURRENT-SENSOR-DATA') {
     serviceHelper.log('trace', `Got sensor data from device: ${process.env.DysonUserName}`);
 
+    // eslint-disable-next-line radix
+    const dustValue = Number.parseInt(deviceData.data.pact || deviceData.data.pm10);
+    // eslint-disable-next-line radix
+    const vocValue = Number.parseInt(deviceData.data.vact || deviceData.data.va10);
+    let airQuality = 0;
+
+    // eslint-disable-next-line no-restricted-globals
+    if (isNaN(dustValue) || isNaN(vocValue)) {
+      airQuality = 0;
+    } else {
+      airQuality = Math.min(Math.max(Math.floor((dustValue + vocValue) / 2 * 1), 1), 5);
+    }
+
+    /*
+      UNKNOWN = 0
+      EXCELLENT = 1
+      GOOD = 2
+      FAIR = 3
+      INFERIOR = 4
+      POOR = 5
+
+      From app:
+      1-3 = Low
+      4-6 = Moderate
+      7-9 = High
+    */
+
     const dataValues = [
       new Date(),
       process.env.Environment,
       'Bedroom',
-      Math.max(
-        getCharacteristicValue(deviceData.data.pm25),
-        getCharacteristicValue(deviceData.data.pm10),
-        getCharacteristicValue(deviceData.data.va10),
-        getCharacteristicValue(deviceData.data.noxl),
-        getCharacteristicValue(deviceData.data.pact),
-        getCharacteristicValue(deviceData.data.vact),
-      ), // Air Quality
+      //Math.max(
+      //  getCharacteristicValue(deviceData.data.pm25),
+      //  getCharacteristicValue(deviceData.data.pm10),
+      //  getCharacteristicValue(deviceData.data.va10),
+      //  getCharacteristicValue(deviceData.data.noxl),
+      //  getCharacteristicValue(deviceData.data.pact),
+      //  getCharacteristicValue(deviceData.data.vact),
+      //), // Air Quality
+      airQuality, // Air Quality
       Number.parseFloat(deviceData.data.tact) / 10 - 273, // Temperature
-      Number.parseInt(deviceData.data.hact, 10), // Humidity
+      // eslint-disable-next-line radix
+      Number.parseInt(deviceData.data.hact), // Humidity
       getNumericValue(deviceData.data.noxl), // Nitrogen Dioxide Density
     ];
 
