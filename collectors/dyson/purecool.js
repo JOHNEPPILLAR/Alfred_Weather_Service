@@ -12,7 +12,9 @@ const poolingInterval = 5 * 60 * 1000; // 5 minutes
 const mqttClientOptions = {
   username: process.env.DysonUserName,
   password: process.env.DysonPassword,
-  clientId: `alfred_${Math.random().toString(16).substr(2, 8)}`,
+  clientId: `alfred_${Math.random()
+    .toString(16)
+    .substr(2, 8)}`,
 };
 const deviceIP = process.env.DysonIP;
 const mqttClient = mqtt.connect(`mqtt://${deviceIP}`, mqttClientOptions);
@@ -117,9 +119,14 @@ exports.processPureCoolData = function processPureCoolData() {
   serviceHelper.log('trace', `Force state update from device: ${process.env.DysonUserName}`);
   const commandTopic = `455/${process.env.DysonUserName}/command`;
   const currentTime = new Date();
-  mqttClient.publish(commandTopic, JSON.stringify({
-    msg: 'REQUEST-CURRENT-STATE',
-    time: currentTime.toISOString(),
-  }));
-  setTimeout(() => { processPureCoolData(); }, poolingInterval); // Wait then run function again
+  mqttClient.publish(
+    commandTopic,
+    JSON.stringify({
+      msg: 'REQUEST-CURRENT-STATE',
+      time: currentTime.toISOString(),
+    }),
+  );
+  setTimeout(() => {
+    processPureCoolData();
+  }, poolingInterval); // Wait then run function again
 };
