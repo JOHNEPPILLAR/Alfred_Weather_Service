@@ -1,7 +1,7 @@
 /**
  * Import helper libraries
  */
-const serviceHelper = require('../lib/helper.js');
+const serviceHelper = require('alfred_helper');
 
 if (!process.env.Mock) {
   // eslint-disable-next-line global-require
