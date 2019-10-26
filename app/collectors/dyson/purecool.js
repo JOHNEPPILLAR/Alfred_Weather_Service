@@ -64,8 +64,11 @@ function getNumericValue(rawValue) {
   return Number.parseInt(rawValue, 10);
 }
 
-mqttClient.on('error', (err) => {
+mqttClient.on('error', async (err) => {
   serviceHelper.log('error', err.message);
+  if (err.message === 'Connection refused: Identifier rejected') {
+    process.exit();
+  }
 });
 
 mqttClient.on('connect', () => {
@@ -120,13 +123,18 @@ mqttClient.on('message', async (topic, message) => {
 });
 
 exports.processPureCoolData = function processPureCoolData() {
+  /*
   if (!mqttClient.connected) {
-    serviceHelper.log(
-      'trace',
-      `Reconnecting to device: ${process.env.DysonUserName}`,
-    );
-    mqttClient.reconnect();
+    setTimeout(() => {
+      serviceHelper.log(
+        'trace',
+        `Reconnecting to device: ${process.env.DysonUserName}`,
+      );
+      mqttClient.reconnect();
+    }, 1000); // Wait before reconnecting
   }
+  */
+
   serviceHelper.log(
     'trace',
     `Force state update from device: ${process.env.DysonUserName}`,
