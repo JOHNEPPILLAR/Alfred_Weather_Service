@@ -2,13 +2,13 @@
  * Import external libraries
  */
 const Skills = require('restify-router').Router;
-const serviceHelper = require('alfred_helper');
+const serviceHelper = require('alfred-helper');
 
 const skill = new Skills();
 
 /**
- * @api {get} /all
- * @apiName all
+ * @api {get} /sensors
+ * @apiName sensors
  * @apiGroup Display
  *
  * @apiSuccessExample {json} Success-Response:
@@ -32,7 +32,7 @@ const skill = new Skills();
  *   }
  *
  */
-async function all(req, res, next) {
+async function sensors(req, res, next) {
   serviceHelper.log('trace', 'Display Dyson PureCool data API called');
 
   let durationSpan = null;
@@ -44,28 +44,23 @@ async function all(req, res, next) {
   try {
     switch (durationSpan) {
       case 'month':
-        SQL =
-          "SELECT time_bucket('6 hours', time) AS timeofday, avg(temperature) as temperature, avg(humidity) as humidity, min(air) as air_quality, avg(nitrogen) as nitrogen FROM dyson_purecool WHERE time > NOW() - interval '1 month' GROUP BY timeofday ORDER BY timeofday DESC";
+        SQL = "SELECT time_bucket('6 hours', time) AS timeofday, avg(temperature) as temperature, avg(humidity) as humidity, min(air) as air_quality, avg(nitrogen) as nitrogen FROM dyson_purecool WHERE time > NOW() - interval '1 month' GROUP BY timeofday ORDER BY timeofday DESC";
         durationTitle = 'Last month';
         break;
       case 'week':
-        SQL =
-          "SELECT time_bucket('3 hours', time) AS timeofday, avg(temperature) as temperature, avg(humidity) as humidity, min(air) as air_quality, avg(nitrogen) as nitrogen FROM dyson_purecool WHERE time > NOW() - interval '1 week' GROUP BY timeofday ORDER BY timeofday DESC";
+        SQL = "SELECT time_bucket('3 hours', time) AS timeofday, avg(temperature) as temperature, avg(humidity) as humidity, min(air) as air_quality, avg(nitrogen) as nitrogen FROM dyson_purecool WHERE time > NOW() - interval '1 week' GROUP BY timeofday ORDER BY timeofday DESC";
         durationTitle = 'Last weeks';
         break;
       case 'day':
-        SQL =
-          "SELECT time_bucket('30 minutes', time) AS timeofday, avg(temperature) as temperature, avg(humidity) as humidity, min(air) as air_quality, avg(nitrogen) as nitrogen FROM dyson_purecool WHERE time > NOW() - interval '1 day' GROUP BY timeofday ORDER BY timeofday DESC";
+        SQL = "SELECT time_bucket('30 minutes', time) AS timeofday, avg(temperature) as temperature, avg(humidity) as humidity, min(air) as air_quality, avg(nitrogen) as nitrogen FROM dyson_purecool WHERE time > NOW() - interval '1 day' GROUP BY timeofday ORDER BY timeofday DESC";
         durationTitle = 'Today';
         break;
       case 'hour':
-        SQL =
-          "SELECT time_bucket('1 minute', time) AS timeofday, avg(temperature) as temperature, avg(humidity) as humidity, min(air) as air_quality, avg(nitrogen) as nitrogen FROM dyson_purecool WHERE time > NOW() - interval '1 hour' GROUP BY timeofday ORDER BY timeofday DESC";
+        SQL = "SELECT time_bucket('1 minute', time) AS timeofday, avg(temperature) as temperature, avg(humidity) as humidity, min(air) as air_quality, avg(nitrogen) as nitrogen FROM dyson_purecool WHERE time > NOW() - interval '1 hour' GROUP BY timeofday ORDER BY timeofday DESC";
         durationTitle = 'Last hour';
         break;
       default:
-        SQL =
-          "SELECT time_bucket('1 minute', time) AS timeofday, avg(temperature) as temperature, avg(humidity) as humidity, min(air) as air_quality, avg(nitrogen) as nitrogen FROM dyson_purecool WHERE time > NOW() - interval '1 hour' GROUP BY timeofday ORDER BY timeofday DESC";
+        SQL = "SELECT time_bucket('1 minute', time) AS timeofday, avg(temperature) as temperature, avg(humidity) as humidity, min(air) as air_quality, avg(nitrogen) as nitrogen FROM dyson_purecool WHERE time > NOW() - interval '1 hour' GROUP BY timeofday ORDER BY timeofday DESC";
         durationTitle = 'Last hour';
         break;
     }
@@ -93,11 +88,11 @@ async function all(req, res, next) {
     next();
   } catch (err) {
     serviceHelper.log('error', err.message);
-    serviceHelper.sendResponse(res, false, err);
+    serviceHelper.sendResponse(res, null, err);
     next();
   }
 }
-skill.get('/all', all);
+skill.get('/sensors', sensors);
 
 /**
  * @api {get} /current
@@ -128,8 +123,7 @@ async function current(req, res, next) {
     'Display Dyson PureCool latest readings API called',
   );
   try {
-    const SQL =
-      "SELECT location, air, temperature, humidity, nitrogen FROM dyson_purecool WHERE time > NOW() - interval '1 hour' ORDER BY time LIMIT 1";
+    const SQL = "SELECT location, air, temperature, humidity, nitrogen FROM dyson_purecool WHERE time > NOW() - interval '1 hour' ORDER BY time LIMIT 1";
     serviceHelper.log('trace', 'Connect to data store connection pool');
     const dbClient = await global.devicesDataClient.connect(); // Connect to data store
     serviceHelper.log('trace', 'Get sensor values');
@@ -153,10 +147,10 @@ async function current(req, res, next) {
     next();
   } catch (err) {
     serviceHelper.log('error', err.message);
-    serviceHelper.sendResponse(res, false, err);
+    serviceHelper.sendResponse(res, null, err);
     next();
   }
 }
-skill.get('/current', current);
+skill.get('/sensors/current', current);
 
 module.exports = skill;

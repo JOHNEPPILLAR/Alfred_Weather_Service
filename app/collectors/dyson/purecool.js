@@ -2,7 +2,7 @@
  * Import external libraries
  */
 const mqtt = require('mqtt');
-const serviceHelper = require('alfred_helper');
+const serviceHelper = require('alfred-helper');
 
 const poolingInterval = 5 * 60 * 1000; // 5 minutes
 const mqttClientOptions = {
@@ -20,8 +20,7 @@ const mqttClient = mqtt.connect(`mqtt://${deviceIP}`, mqttClientOptions);
  */
 async function saveDeviceData(SQLValues) {
   try {
-    const SQL =
-      'INSERT INTO dyson_purecool("time", sender, location, air, temperature, humidity, nitrogen) VALUES ($1, $2, $3, $4, $5, $6, $7)';
+    const SQL = 'INSERT INTO dyson_purecool("time", sender, location, air, temperature, humidity, nitrogen) VALUES ($1, $2, $3, $4, $5, $6, $7)';
     serviceHelper.log('trace', 'Connect to data store connection pool');
     const dbClient = await global.devicesDataClient.connect(); // Connect to data store
     serviceHelper.log('trace', 'Save sensor values');
