@@ -111,7 +111,7 @@ skill.get('/sensors', sensors);
  *   }
  *
  * @apiErrorExample {json} Error-Response:
- *   HTTPS/1.1 400 Bad Request
+ *   HTTPS/1.1 500 Internal error
  *   {
  *     data: Error message
  *   }
