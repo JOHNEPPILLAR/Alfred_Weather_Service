@@ -34,12 +34,12 @@ const skill = new Skills();
  */
 async function sensors(req, res, next) {
   serviceHelper.log('trace', 'Display Dyson PureCool data API called');
-
-  let durationSpan = null;
-  if (typeof req.query !== 'undefined') ({ durationSpan } = req.query);
+  serviceHelper.log('trace', `Query: ${JSON.stringify(req.query)}`);
 
   let durationTitle;
   let SQL;
+
+  const { durationSpan } = req.query;
 
   try {
     switch (durationSpan) {
@@ -77,7 +77,7 @@ async function sensors(req, res, next) {
 
     if (results.rowCount === 0) {
       serviceHelper.log('trace', 'No data to return');
-      serviceHelper.sendResponse(res, 200, 'No data to return');
+      serviceHelper.sendResponse(res, 200, {});
       return;
     }
     serviceHelper.log('trace', 'Return data back to caller');
@@ -136,7 +136,7 @@ async function current(req, res, next) {
 
     if (results.rowCount === 0) {
       serviceHelper.log('trace', 'No data exists in the last hour');
-      serviceHelper.sendResponse(res, 200, 'No data to return');
+      serviceHelper.sendResponse(res, 200, {});
       next();
       return;
     }
