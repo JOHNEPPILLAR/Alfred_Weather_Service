@@ -60,7 +60,9 @@ exports.processPureCoolData = async function processPureCoolData() {
   const DysonUserName = await serviceHelper.vaultSecret(process.env.ENVIRONMENT, 'DysonUserName');
   const DysonPassword = await serviceHelper.vaultSecret(process.env.ENVIRONMENT, 'DysonPassword');
   const DysonIP = await serviceHelper.vaultSecret(process.env.ENVIRONMENT, 'DysonIP');
-  if (DysonUserName instanceof Error || DysonPassword instanceof Error || DysonIP instanceof Error) {
+  if (DysonUserName instanceof Error
+    || DysonPassword instanceof Error
+    || DysonIP instanceof Error) {
     serviceHelper.log('error', 'Not able to get secret (Dyson info) from vault');
     return;
   }
@@ -73,11 +75,11 @@ exports.processPureCoolData = async function processPureCoolData() {
   };
   const mqttClient = await mqtt.connect(`mqtt://${DysonIP}`, mqttClientOptions);
 
-  mqttClient.on('error', async (err) => {
+  mqttClient.on('error', (err) => {
     serviceHelper.log('error', err.message);
   });
 
-  mqttClient.on('connect', async() => {
+  mqttClient.on('connect', async () => {
     serviceHelper.log(
       'trace',
       `Connected to device: ${DysonUserName}`,
@@ -88,7 +90,7 @@ exports.processPureCoolData = async function processPureCoolData() {
     serviceHelper.log(
       'trace',
       `Force state update from device: ${DysonUserName}`,
-    );  
+    );
     const commandTopic = `455/${DysonUserName}/command`;
     const currentTime = new Date();
     await mqttClient.publish(
@@ -99,7 +101,7 @@ exports.processPureCoolData = async function processPureCoolData() {
       }),
     );
   });
-  
+
   mqttClient.on('message', async (topic, message) => {
     const deviceData = JSON.parse(message);
     if (deviceData.msg === 'ENVIRONMENTAL-CURRENT-SENSOR-DATA') {
@@ -107,14 +109,14 @@ exports.processPureCoolData = async function processPureCoolData() {
         'trace',
         `Got sensor data from device: ${DysonUserName}`,
       );
-  
+
       /*
         Air quality
         1-3 = Low
         4-6 = Moderate
         7-9 = High
       */
-  
+
       const dataValues = [
         new Date(),
         process.env.ENVIRONMENT,
@@ -132,9 +134,9 @@ exports.processPureCoolData = async function processPureCoolData() {
         Number.parseInt(deviceData.data.hact), // Humidity
         getNumericValue(deviceData.data.noxl), // Nitrogen Dioxide Density
       ];
-  
+
       await saveDeviceData(dataValues); // Save data to data store
-  
+
       serviceHelper.log(
         'trace',
         `Disconnect from device: ${DysonUserName}`,
