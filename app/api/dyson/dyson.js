@@ -66,7 +66,8 @@ async function sensors(req, res, next) {
     }
 
     serviceHelper.log('trace', 'Connect to data store connection pool');
-    const dbClient = await global.devicesDataClient.connect(); // Connect to data store
+    const dbConnection = await serviceHelper.connectToDB('devices');
+    const dbClient = await dbConnection.connect(); // Connect to data store
     serviceHelper.log('trace', 'Get sensor values');
     const results = await dbClient.query(SQL);
     serviceHelper.log(
@@ -74,6 +75,7 @@ async function sensors(req, res, next) {
       'Release the data store connection back to the pool',
     );
     await dbClient.release(); // Return data store connection back to pool
+    await dbClient.end(); // Close data store connection
 
     if (results.rowCount === 0) {
       serviceHelper.log('trace', 'No data to return');
@@ -125,7 +127,8 @@ async function current(req, res, next) {
   try {
     const SQL = "SELECT location, air, temperature, humidity, nitrogen FROM dyson_purecool WHERE time > NOW() - interval '1 hour' ORDER BY time LIMIT 1";
     serviceHelper.log('trace', 'Connect to data store connection pool');
-    const dbClient = await global.devicesDataClient.connect(); // Connect to data store
+    const dbConnection = await serviceHelper.connectToDB('devices');
+    const dbClient = await dbConnection.connect(); // Connect to data store
     serviceHelper.log('trace', 'Get sensor values');
     const results = await dbClient.query(SQL);
     serviceHelper.log(
@@ -133,6 +136,7 @@ async function current(req, res, next) {
       'Release the data store connection back to the pool',
     );
     await dbClient.release(); // Return data store connection back to pool
+    await dbClient.end(); // Close data store connection
 
     if (results.rowCount === 0) {
       serviceHelper.log('trace', 'No data exists in the last hour');

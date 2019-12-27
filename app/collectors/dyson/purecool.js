@@ -5,15 +5,6 @@ const mqtt = require('mqtt');
 const serviceHelper = require('alfred-helper');
 
 const poolingInterval = 5 * 60 * 1000; // 5 minutes
-const mqttClientOptions = {
-  username: process.env.DysonUserName,
-  password: process.env.DysonPassword,
-  clientId: `alfred_${Math.random()
-    .toString(16)
-    .substr(2, 8)}`,
-};
-const deviceIP = process.env.DysonIP;
-const mqttClient = mqtt.connect(`mqtt://${deviceIP}`, mqttClientOptions);
 
 /**
  * Save data to data store
@@ -21,8 +12,8 @@ const mqttClient = mqtt.connect(`mqtt://${deviceIP}`, mqttClientOptions);
 async function saveDeviceData(SQLValues) {
   try {
     const SQL = 'INSERT INTO dyson_purecool("time", sender, location, air, temperature, humidity, nitrogen) VALUES ($1, $2, $3, $4, $5, $6, $7)';
-    serviceHelper.log('trace', 'Connect to data store connection pool');
-    const dbClient = await global.devicesDataClient.connect(); // Connect to data store
+    const dbConnection = await serviceHelper.connectToDB('devices');
+    const dbClient = await dbConnection.connect(); // Connect to data store
     serviceHelper.log('trace', 'Save sensor values');
     const results = await dbClient.query(SQL, SQLValues);
     serviceHelper.log(
@@ -30,6 +21,7 @@ async function saveDeviceData(SQLValues) {
       'Release the data store connection back to the pool',
     );
     await dbClient.release(); // Return data store connection back to pool
+    await dbClient.end(); // Close data store connection
 
     if (results.rowCount !== 1) {
       serviceHelper.log(
@@ -64,90 +56,94 @@ function getNumericValue(rawValue) {
   return Number.parseInt(rawValue, 10);
 }
 
-mqttClient.on('error', async (err) => {
-  serviceHelper.log('error', err.message);
-  if (err.message === 'Connection refused: Identifier rejected') {
-    process.exit();
+exports.processPureCoolData = async function processPureCoolData() {
+  const DysonUserName = await serviceHelper.vaultSecret(process.env.ENVIRONMENT, 'DysonUserName');
+  const DysonPassword = await serviceHelper.vaultSecret(process.env.ENVIRONMENT, 'DysonPassword');
+  const DysonIP = await serviceHelper.vaultSecret(process.env.ENVIRONMENT, 'DysonIP');
+  if (DysonUserName instanceof Error || DysonPassword instanceof Error || DysonIP instanceof Error) {
+    serviceHelper.log('error', 'Not able to get secret (Dyson info) from vault');
+    return;
   }
-});
+  const mqttClientOptions = {
+    username: DysonUserName,
+    password: DysonPassword,
+    clientId: `alfred_${Math.random()
+      .toString(16)
+      .substr(2, 8)}`,
+  };
+  const mqttClient = await mqtt.connect(`mqtt://${DysonIP}`, mqttClientOptions);
 
-mqttClient.on('connect', () => {
-  serviceHelper.log(
-    'trace',
-    `Connected to device: ${process.env.DysonUserName}`,
-  );
-  const statusSubscribeTopic = `455/${process.env.DysonUserName}/status/current`;
-  mqttClient.subscribe(statusSubscribeTopic);
-});
+  mqttClient.on('error', async (err) => {
+    serviceHelper.log('error', err.message);
+  });
 
-mqttClient.on('message', async (topic, message) => {
-  const deviceData = JSON.parse(message);
-  if (deviceData.msg === 'ENVIRONMENTAL-CURRENT-SENSOR-DATA') {
+  mqttClient.on('connect', async() => {
     serviceHelper.log(
       'trace',
-      `Got sensor data from device: ${process.env.DysonUserName}`,
+      `Connected to device: ${DysonUserName}`,
     );
+    const statusSubscribeTopic = `455/${DysonUserName}/status/current`;
+    await mqttClient.subscribe(statusSubscribeTopic);
 
-    /*
-      Air quality
-      1-3 = Low
-      4-6 = Moderate
-      7-9 = High
-    */
-
-    const dataValues = [
-      new Date(),
-      process.env.Environment,
-      'Bedroom',
-      Math.max(
-        getCharacteristicValue(deviceData.data.pm25),
-        getCharacteristicValue(deviceData.data.pm10),
-        getCharacteristicValue(deviceData.data.va10),
-        getCharacteristicValue(deviceData.data.noxl),
-        getCharacteristicValue(deviceData.data.pact),
-        getCharacteristicValue(deviceData.data.vact),
-      ), // Air Quality
-      Number.parseFloat(deviceData.data.tact) / 10 - 273, // Temperature
-      // eslint-disable-next-line radix
-      Number.parseInt(deviceData.data.hact), // Humidity
-      getNumericValue(deviceData.data.noxl), // Nitrogen Dioxide Density
-    ];
-
-    await saveDeviceData(dataValues); // Save data to data store
-
-    return new Promise((resolve) => {
-      resolve(dataValues);
-    });
-  }
-  return true;
-});
-
-exports.processPureCoolData = function processPureCoolData() {
-  /*
-  if (!mqttClient.connected) {
-    setTimeout(() => {
+    serviceHelper.log(
+      'trace',
+      `Force state update from device: ${DysonUserName}`,
+    );  
+    const commandTopic = `455/${DysonUserName}/command`;
+    const currentTime = new Date();
+    await mqttClient.publish(
+      commandTopic,
+      JSON.stringify({
+        msg: 'REQUEST-CURRENT-STATE',
+        time: currentTime.toISOString(),
+      }),
+    );
+  });
+  
+  mqttClient.on('message', async (topic, message) => {
+    const deviceData = JSON.parse(message);
+    if (deviceData.msg === 'ENVIRONMENTAL-CURRENT-SENSOR-DATA') {
       serviceHelper.log(
         'trace',
-        `Reconnecting to device: ${process.env.DysonUserName}`,
+        `Got sensor data from device: ${DysonUserName}`,
       );
-      mqttClient.reconnect();
-    }, 1000); // Wait before reconnecting
-  }
-  */
+  
+      /*
+        Air quality
+        1-3 = Low
+        4-6 = Moderate
+        7-9 = High
+      */
+  
+      const dataValues = [
+        new Date(),
+        process.env.ENVIRONMENT,
+        'Bedroom',
+        Math.max(
+          getCharacteristicValue(deviceData.data.pm25),
+          getCharacteristicValue(deviceData.data.pm10),
+          getCharacteristicValue(deviceData.data.va10),
+          getCharacteristicValue(deviceData.data.noxl),
+          getCharacteristicValue(deviceData.data.pact),
+          getCharacteristicValue(deviceData.data.vact),
+        ), // Air Quality
+        Number.parseFloat(deviceData.data.tact) / 10 - 273, // Temperature
+        // eslint-disable-next-line radix
+        Number.parseInt(deviceData.data.hact), // Humidity
+        getNumericValue(deviceData.data.noxl), // Nitrogen Dioxide Density
+      ];
+  
+      await saveDeviceData(dataValues); // Save data to data store
+  
+      serviceHelper.log(
+        'trace',
+        `Disconnect from device: ${DysonUserName}`,
+      );
+      await mqttClient.end();
+    }
+    return true;
+  });
 
-  serviceHelper.log(
-    'trace',
-    `Force state update from device: ${process.env.DysonUserName}`,
-  );
-  const commandTopic = `455/${process.env.DysonUserName}/command`;
-  const currentTime = new Date();
-  mqttClient.publish(
-    commandTopic,
-    JSON.stringify({
-      msg: 'REQUEST-CURRENT-STATE',
-      time: currentTime.toISOString(),
-    }),
-  );
   setTimeout(() => {
     processPureCoolData();
   }, poolingInterval); // Wait then run function again
