@@ -66,7 +66,7 @@ async function sensors(req, res, next) {
     }
 
     serviceHelper.log('trace', 'Connect to data store connection pool');
-    const dbConnection = await serviceHelper.connectToDB('devices');
+    const dbConnection = await serviceHelper.connectToDB('dyson');
     const dbClient = await dbConnection.connect(); // Connect to data store
     serviceHelper.log('trace', 'Get sensor values');
     const results = await dbClient.query(SQL);
@@ -127,7 +127,7 @@ async function current(req, res, next) {
   try {
     const SQL = "SELECT location, air, temperature, humidity, nitrogen FROM dyson_purecool WHERE time > NOW() - interval '1 hour' ORDER BY time LIMIT 1";
     serviceHelper.log('trace', 'Connect to data store connection pool');
-    const dbConnection = await serviceHelper.connectToDB('devices');
+    const dbConnection = await serviceHelper.connectToDB('dyson');
     const dbClient = await dbConnection.connect(); // Connect to data store
     serviceHelper.log('trace', 'Get sensor values');
     const results = await dbClient.query(SQL);
