@@ -74,7 +74,6 @@ async function sensors(req, res, next) {
       'trace',
       'Release the data store connection back to the pool',
     );
-    await dbClient.release(); // Return data store connection back to pool
     await dbClient.end(); // Close data store connection
 
     if (results.rowCount === 0) {
@@ -135,7 +134,6 @@ async function current(req, res, next) {
       'trace',
       'Release the data store connection back to the pool',
     );
-    await dbClient.release(); // Return data store connection back to pool
     await dbClient.end(); // Close data store connection
 
     if (results.rowCount === 0) {
