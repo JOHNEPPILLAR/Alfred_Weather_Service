@@ -13,14 +13,13 @@ async function saveDeviceData(SQLValues) {
   try {
     const SQL = 'INSERT INTO dyson_purecool("time", sender, location, air, temperature, humidity, nitrogen) VALUES ($1, $2, $3, $4, $5, $6, $7)';
     const dbConnection = await serviceHelper.connectToDB('dyson');
-    const dbClient = await dbConnection.connect(); // Connect to data store
     serviceHelper.log('trace', 'Save sensor values');
-    const results = await dbClient.query(SQL, SQLValues);
+    const results = await dbConnection.query(SQL, SQLValues);
     serviceHelper.log(
       'trace',
       'Release the data store connection back to the pool',
     );
-    await dbClient.end(); // Close data store connection
+    await dbConnection.end(); // Close data store connection
 
     if (results.rowCount !== 1) {
       serviceHelper.log(
