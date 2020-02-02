@@ -71,12 +71,11 @@ exports.processPureCoolData = async function processPureCoolData() {
       .toString(16)
       .substr(2, 8)}`,
   };
+
+  serviceHelper.log('trace', 'Connecting to Dyson device');
   const mqttClient = await mqtt.connect(`mqtt://${DysonIP}`, mqttClientOptions);
 
-  mqttClient.on('error', (err) => {
-    serviceHelper.log('error', err.message);
-  });
-
+  mqttClient.on('error', (err) => serviceHelper.log('error', err.message));
   mqttClient.on('connect', async () => {
     serviceHelper.log(
       'trace',
@@ -144,7 +143,8 @@ exports.processPureCoolData = async function processPureCoolData() {
     return true;
   });
 
-  setTimeout(() => {
-    processPureCoolData();
+  setTimeout(async () => {
+    await mqttClient.end();
+    await processPureCoolData();
   }, poolingInterval); // Wait then run function again
 };
