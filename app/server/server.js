@@ -16,6 +16,7 @@ const APIroot = require('../api/root/root.js');
 const APIdyson = require('../api/dyson/dyson.js');
 
 global.APITraceID = '';
+
 let ClientAccessKey;
 
 async function setupAndRun() {
