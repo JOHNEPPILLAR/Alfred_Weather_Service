@@ -17,6 +17,8 @@ snyk test
 echo "Set env vars"
 export ENVIRONMENT="development"
 export MOCK="false"
+export ALFRED_DYSON_SERVICE="https://alfred_dyson_data_collector_service:3979/dyson"
+export ALFRED_NETATMO_SERVICE="https://alfred_netatmo_data_collector_service:3979/netatmo"
 
 echo "Run the server"
 npm run local
