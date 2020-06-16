@@ -16,7 +16,6 @@
     "alfred-helper": "git://github.com/johneppillar/alfred_helper_lib",
     "dateformat": "^3.0.3",
     "dotenv": "^8.2.0",
-    "pure-uuid": "^1.6.0",
     "request": "^2.88.2",
     "request-promise": "^4.2.5",
     "restify": "^8.5.1",
