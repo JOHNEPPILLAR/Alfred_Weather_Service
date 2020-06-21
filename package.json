@@ -16,6 +16,8 @@
   "dependencies": {
     "alfred-base": "git://github.com/johneppillar/alfred_base_service",
     "alfred-helper": "git://github.com/johneppillar/alfred_helper",
+    "pino": "^6.3.2",
+    "pino-pretty": "^4.0.0",
     "dateformat": "^3.0.3",
     "dotenv": "^8.2.0",
     "request": "^2.88.2",
