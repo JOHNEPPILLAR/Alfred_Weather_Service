@@ -1,8 +1,5 @@
 #!/usr/bin/env sh
 
-set -x
-set -e
-
 echo "Set env vars"
 PORT=3979
 SERVICE_NAME=$(node -p -e "require('./package.json').name")
