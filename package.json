@@ -20,8 +20,6 @@
     "pino-pretty": "^4.0.0",
     "dateformat": "^3.0.3",
     "dotenv": "^8.2.0",
-    "request": "^2.88.2",
-    "request-promise": "^4.2.5",
     "snyk": "^1.349.0"
   },
   "devDependencies": {
