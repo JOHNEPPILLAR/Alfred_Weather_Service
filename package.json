@@ -36,8 +36,5 @@
     "eslint-plugin-react": "^7.20.0",
     "eslint-plugin-react-hooks": "^4.0.4",
     "prettier": "^2.0.5"
-  },
-  "resolutions": {
-    "eslint": "~7.2.0"
   }
 }
