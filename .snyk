@@ -12,16 +12,10 @@ patch:
         patched: '2020-06-21T17:16:54.688Z'
     - alfred_helper_lib > node-vault > snyk > lodash:
         patched: '2020-05-01T04:57:14.830Z'
-      restify > restify-errors > @netflix/nerror > lodash:
-        patched: '2020-06-21T17:16:54.688Z'
     - alfred_helper_lib > request-promise > request-promise-core > lodash:
         patched: '2020-05-01T04:57:14.830Z'
-      node-vault > request-promise-native > request-promise-core > lodash:
-        patched: '2020-06-21T17:16:54.688Z'
     - restify > restify-errors > @netflix/nerror > lodash:
         patched: '2020-05-01T04:57:14.830Z'
-      '@netflix/nerror > lodash':
-        patched: '2020-06-21T17:16:54.688Z'
     - alfred_helper_lib > node-vault > request-promise-native > request-promise-core > lodash:
         patched: '2020-05-01T04:57:14.830Z'
     - alfred_helper_lib > node-vault > snyk > @snyk/dep-graph > lodash:
@@ -68,3 +62,9 @@ patch:
         patched: '2020-06-21T08:54:23.524Z'
     - '@netflix/nerror > lodash':
         patched: '2020-06-21T08:54:23.524Z'
+    - restify > restify-errors > @netflix/nerror > lodash:
+        patched: '2020-06-21T17:16:54.688Z'
+    - node-vault > request-promise-native > request-promise-core > lodash:
+        patched: '2020-06-21T17:16:54.688Z'
+    - '@netflix/nerror > lodash':
+        patched: '2020-06-21T17:16:54.688Z'
