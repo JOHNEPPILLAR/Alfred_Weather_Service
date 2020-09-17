@@ -1,8 +1,10 @@
 #!/bin/bash
 clear
 
-echo "The following node processes were found and will be killed:"
+APP_NAME=$(jq -r .name package.json)_role
 export PORT=3978
+
+echo "The following node processes were found and will be killed:"
 lsof -i :$PORT
 kill -9 $(lsof -sTCP:LISTEN -i:$PORT -t)
 
@@ -35,10 +37,10 @@ echo "Get app vault token"
 TMP_VAULT_TOKEN=$VAULT_TOKEN
 vault login -address=$VAULT_URL $VAULT_TOKEN
 export VAULT_TOKEN=""
-VAULES=$(vault read -address=$VAULT_URL -format=json auth/approle/role/alfred_weather_service_role/role-id)
+VAULES=$(vault read -address=$VAULT_URL -format=json auth/approle/role/$APP_NAME/role-id)
 APP_ROLE_ID=$(echo $VAULES | jq .data.role_id)
 export APP_ROLE_ID=${APP_ROLE_ID:1:${#APP_ROLE_ID}-2}
-VAULES=$(vault write -f --format=json -address=$VAULT_URL auth/approle/role/alfred_weather_service_role/secret-id)
+VAULES=$(vault write -f --format=json -address=$VAULT_URL auth/approle/role/$APP_NAME/secret-id)
 APP_TOKEN=$(echo $VAULES | jq .data.secret_id)
 export APP_TOKEN=${APP_TOKEN:1:${#APP_TOKEN}-2}
 
