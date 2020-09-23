@@ -26,7 +26,6 @@ FROM node:14-alpine AS app
 ENV TZ=Europe/London
 
 RUN mkdir -p /home/nodejs/app \
-	&& mkdir -p /home/nodejs/app/node_modules \
 	&& apk add --no-cache --virtual \
 	tzdata \
 	curl \
@@ -36,7 +35,7 @@ RUN mkdir -p /home/nodejs/app \
 WORKDIR /home/nodejs/app
 
 ## Copy pre-installed/build modules and app
-COPY --from=builder /home/nodejs/app/node_modules .
+COPY --from=builder /home/nodejs/app .
 COPY --chown=node:node . .
 
 ## Swap to node user
