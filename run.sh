@@ -26,8 +26,8 @@ fi
 echo "Set env vars"
 export ENVIRONMENT="development"
 export MOCK="false"
-export ALFRED_DYSON_SERVICE="https://alfred_dyson_data_collector_service:3979"
-export ALFRED_NETATMO_SERVICE="https://alfred_netatmo_data_collector_service:3979"
+export ALFRED_DYSON_SERVICE="https://johnpillar.me:3981/dyson"
+export ALFRED_NETATMO_SERVICE="https://johnpillar.me:3981/netatmo"
 
 echo "Get app vault token"
 TMP_VAULT_TOKEN=$VAULT_TOKEN
